@@ -1,0 +1,11 @@
+name,course_code,maximum_marks,weightage
+Mid Sem,PH110,25,25
+End Sem,PH110,50,50
+Assignments,PH110,5,25
+Mid Sem,AM110,35,35
+End Sem,AM110,65,65
+Assignments,ME111,100,100
+End Sem,CY110,100,100
+End Sem,CS110,30,30
+Quiz 1,CS110,10,10
+Quiz 2,CS110,10,10
