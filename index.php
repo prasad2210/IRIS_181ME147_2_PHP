@@ -96,7 +96,7 @@
       </tr>';
       if($count == "1"){
        $subBody1 .= '<li class="nav-item">
-       <a class="nav-link active" id="tab-'.$row["id"].'" data-toggle="tab" href="#tab-'.$row["id"].'" role="tab" aria-controls="home" aria-selected="true">'.$row["courseName"].'</a>
+       <a class="nav-link active" id="'.$row["id"].'" data-toggle="tab" href="#tab-'.$row["id"].'" role="tab" aria-controls="home" aria-selected="true">'.$row["courseName"].'</a>
        </li>';
        $subBody2 .= '<div class="tab-pane fade show active" id="tab-'.$row["id"].'" role="tabpanel" aria-labelledby="profile-tab"><div class="text-center">
        <h3> Add all exams for '.$row["courseName"].'</h3>
@@ -106,24 +106,27 @@
            <input type="text" class="form-control" id="examName" name="examName" placeholder="Ex. Quiz1" required>
          </div>
          <div class="form-group">
-           <label for="examMax">Maximum Marks</label>
-           <input type="text" class="form-control" id="examMax" name="examMax" placeholder="Ex. 5" required>
+           <label for="maximum">Maximum Marks</label>
+           <input type="number" class="form-control" id="maximum" name="maximum" placeholder="Ex. 5" min = "0"required>
          </div>
          <div class="form-group">
            <label for="waitage">Waitage in percentage</label>
            <input type="number" class="form-control" id="waitage" name="waitage" min="1" max="100"placeholder="Ex. 25" required>
          </div>
          <div class="justify-content-center">
+         <input type="hidden" name="courseId" value="'.$row["id"].'">
            <button type="submit" name="exam" value="exam" class="btn btn-primary">Add Exam</button>
          </div>
        </form>
-
+       <form method="POST">
+       <button type="submit" name="done" value="done" class="btn btn-primary">Done</button>
+       </form>
        </div>
        </div>';
       }
       else{
-        $subBody1 .= '<li class="nav-item">
-       <a class="nav-link" id="tab'.$row["id"].'" data-toggle="tab" href="#tab-'.$row["id"].' role="tab" aria-controls="home" aria-selected="true">'.$row["courseName"].'</a>
+        $subBody1 .= '<li class="nav-item ">
+       <a class="nav-link" id="'.$row["id"].'" data-toggle="tab" href="#tab-'.$row["id"].'" role="tab" aria-controls="home" aria-selected="true">'.$row["courseName"].'</a>
        </li>';
        $subBody2 .= '<div class="tab-pane fade" id="tab-'.$row["id"].'" role="tabpanel" aria-labelledby="profile-tab"><div class="text-center">
        <h3> Add all exams for '.$row["courseName"].'</h3>
@@ -133,23 +136,94 @@
            <input type="text" class="form-control" id="examName" name="examName" placeholder="Ex. Quiz1" required>
          </div>
          <div class="form-group">
-           <label for="examMax">Maximum Marks</label>
-           <input type="text" class="form-control" id="examMax" name="examMax" placeholder="Ex. 5" required>
+           <label for="maximum">Maximum Marks</label>
+           <input type="number" class="form-control" id="maximum" name="maximum" placeholder="Ex. 5" min="0" required>
          </div>
          <div class="form-group">
            <label for="waitage">Waitage in percentage</label>
            <input type="number" class="form-control" id="waitage" name="waitage" min="1" max="100"placeholder="Ex. 25" required>
+           <input type="hidden" class="form-control" name="courseId" value="'.$row["id"].'">
          </div>
          <div class="justify-content-center">
-           <button type="submit" name="exam" value="exam" class="btn btn-primary">Add Exam</button>
+            
+            <button type="submit" name="exam" value="exam" class="btn btn-primary">Add Exam</button>
          </div>
        </form>
-
+       <form method="POST">
+       <button type="submit" name="done" value="done" class="btn btn-primary">Done</button>
+       </form>
        </div>
        </div>';
       }
     }
   }
+  $status1 =  '';
+  if(array_key_exists("exam", $_POST)){
+    $query = "INSERT INTO `exams` (`courseId`, `examName`, `maximum`, `waitage`) VALUES 
+    ('".mysqli_real_escape_string($conn, $_POST['courseId'])."', '".mysqli_real_escape_string($conn, $_POST['examName'])."', '".mysqli_real_escape_string($conn, $_POST['maximum'])."', 
+    '".mysqli_real_escape_string($conn, $_POST['waitage'])."')";
+    if(mysqli_query($conn, $query)){
+      $status = '<div class="alert alert-success text-center col-md-12" role="alert">exam is added<button type="button" class="close" data-dismiss="alert">x</button> </div>';
+    }
+    else{
+      $status = '<div class="alert alert-danger text-center col-md-12" role="alert">Could not add exam. try again<button type="button" class="close" data-dismiss="alert">x</button> </div>';
+    }
+  }
+  $mainBody1 = '';
+  $count = '0';
+  $query = "SELECT * FROM `exams`";
+  $result = mysqli_query($conn, $query);
+  if(mysqli_num_rows($result)>0){
+    while($row = mysqli_fetch_assoc($result)){
+      $count++;
+      $query = "SELECT `courseName` FROM `courses` WHERE id = '".mysqli_real_escape_string($conn, $row['courseId'])."'";
+      $row1 = mysqli_fetch_array(mysqli_query($conn, $query));
+      if(array_key_exists("courseName", $row1)){
+        $mainBody1 .= '<tr>
+        <th scope="row">'.$count.'</th>
+        <td>'.$row1["courseName"].'</td>
+        <td>'.$row["examName"].'</td>
+        <td>'.$row["maximum"].'</td>
+        <td>'.$row["waitage"].'</td>
+      </tr>';
+      }
+    }
+  }
+  $query1 ='';
+
+  if(array_key_exists("done", $_POST)){
+
+        $query = "SELECT * FROM `courses`";
+        $result = mysqli_query($conn, $query);
+        if(mysqli_num_rows($result)>0){
+          echo mysqli_num_rows($result);
+          while($row = mysqli_fetch_assoc($result)){
+            $query1 = '';
+            echo $row['courseCode'];
+            $query = "SELECT `examName` FROM `exams` WHERE courseId = ".mysqli_real_escape_string($conn, $row['id'])."";
+            $result = mysqli_query($conn, $query); 
+            $query1 = "CREATE TABLE ".mysqli_real_escape_string($conn, $row['courseCode'])." (
+              id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+              studentName TEXT(50) NOT NULL,
+              studentId TEXT(30) NOT NULL,";
+            while($row1 = mysqli_fetch_assoc($result)){
+              $query1 .= "".mysqli_real_escape_string($conn, $row1['examName'])." int(11) NOT NULL,";
+            } 
+            $query1 = rtrim($query1, ",");
+            $query1 .= ");";
+            //echo $query1;
+            if(mysqli_query($conn, $query1)){
+              echo "prasa";
+            }
+            else{
+              echo "sakshi";
+            }
+          }
+        //}
+      //}
+    }
+  }
+
 ?>
 
 <body>
@@ -184,6 +258,7 @@
   </div>
   <div class="row"> 
       <?php echo $status; ?>
+
     </div>
   <div class="row  border border-top-0">
 
@@ -238,17 +313,35 @@
       </div>
     </div>
     <div class="col-md-7 px-2  mx-2  border border-top-0" id="main-area">
+    <div class="row"> 
+      <?php echo $status; ?>
+      
+    </div>
       <div class="row">
         <div class="col-md-12 bg-light p-2 m-2">
-          <div class="text-warning p-2 m-2"> 
+          <div class=" p-2 m-2"> 
             <div class="alert alert-danger text-center col-md-12" role="alert"><h4> Warning: Add student name and roll number in first two Columns and next add all exam marks sequentially.</h4>  
-            </div>
+            </div>  
           </div>
         </div>
+        <table class="table table-striped ">
+        <thead>
+            <tr>
+            <th scope="col">#</th>
+            <th scope="col">Course Name</th>
+            <th scope="col">Exam </th>
+            <th scope="col">Maximum marks</th>
+            <th scope="col">Waitage</th>
+            </tr>
+        </thead>
+        <tbody>
+          <?php echo $mainBody1;?>
+        </tbody>
+      </table>
       </div>
       <div>
         <ul class="nav nav-tabs" id="myTab1" role="tablist">
-          <?php echo $subBody1;?>
+          <?php ?>
       </ul>
       </div>
     </div>
@@ -270,10 +363,10 @@
   <script type="text/javascript">
 
 
-    $('#myTab a').on('click', function (e) {
-      e.preventDefault();
-      $(this).tab('show');
-    });
+    // $('#myTab a').on('click', function (e) {
+    //   e.preventDefault();
+    //   $(this).tab('show');
+    // });
 
     // function hideShowMenu(){
     //   if($("#hideShowMenuText").html() == "Close Menu"){
